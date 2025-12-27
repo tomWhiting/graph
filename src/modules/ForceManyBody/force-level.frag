@@ -7,6 +7,8 @@ precision highp float;
 
 uniform sampler2D positionsTexture;
 uniform sampler2D levelFbo;
+uniform sampler2D repulsionMultipliersTexture;
+uniform float pointsTextureSize;
 
 uniform float level;
 uniform float levels;
@@ -20,7 +22,7 @@ varying vec2 textureCoords;
 
 const float MAX_LEVELS_NUM = 14.0;
 
-vec2 calculateAdditionalVelocity (vec2 ij, vec2 pp) {
+vec2 calculateAdditionalVelocity (vec2 ij, vec2 pp, float pointRepulsionMultiplier) {
   vec2 add = vec2(0.0);
   vec4 centermass = texture2D(levelFbo, ij);
   if (centermass.r > 0.0 && centermass.g > 0.0 && centermass.b > 0.0) {
@@ -29,7 +31,9 @@ vec2 calculateAdditionalVelocity (vec2 ij, vec2 pp) {
     float l = dot(distVector, distVector);
     float dist = sqrt(l);
     if (l > 0.0) {
-      float c = alpha * repulsion * centermass.b;
+      // Apply both the centermass weight (centermass.b which now includes repulsion multipliers)
+      // and the current point's repulsion multiplier
+      float c = alpha * repulsion * centermass.b * pointRepulsionMultiplier;
 
       float distanceMin2 = 1.0;
       if (l < distanceMin2) l = sqrt(distanceMin2 * l);
@@ -44,6 +48,11 @@ void main() {
   vec4 pointPosition = texture2D(positionsTexture, textureCoords);
   float x = pointPosition.x;
   float y = pointPosition.y;
+
+  // Get the repulsion multiplier for this point (0 or missing means use default of 1.0)
+  vec4 repulsionMultiplierVec = texture2D(repulsionMultipliersTexture, textureCoords);
+  float pointRepulsionMultiplier = repulsionMultiplierVec.r;
+  pointRepulsionMultiplier = pointRepulsionMultiplier > 0.0 ? pointRepulsionMultiplier : 1.0;
 
   float left = 0.0;
   float top = 0.0;
@@ -72,7 +81,7 @@ void main() {
 
       float dist_top = y - top;
       n_top = max(0.0, floor(dist_top / cellSize - theta));
-      
+
       float dist_right = right - x;
       n_right = max(0.0, floor(dist_right / cellSize - theta));
 
@@ -91,28 +100,28 @@ void main() {
       float m = top + cellSize * n_top + cellSize * i;
 
       if (n < (left + n_left * cellSize) && m < bottom) {
-        velocity.xy += calculateAdditionalVelocity(vec2(n / cellSize, m / cellSize) / levelTextureSize, pointPosition.xy);
+        velocity.xy += calculateAdditionalVelocity(vec2(n / cellSize, m / cellSize) / levelTextureSize, pointPosition.xy, pointRepulsionMultiplier);
       }
 
       n = left + cellSize * i;
       m = top + cellSize * j;
 
       if (n < (right - n_right * cellSize) && m < (top + n_top * cellSize)) {
-        velocity.xy += calculateAdditionalVelocity(vec2(n / cellSize, m / cellSize) / levelTextureSize, pointPosition.xy);
+        velocity.xy += calculateAdditionalVelocity(vec2(n / cellSize, m / cellSize) / levelTextureSize, pointPosition.xy, pointRepulsionMultiplier);
       }
 
       n = right - n_right * cellSize + cellSize * j;
       m = top + cellSize * i;
 
       if (n < right && m < (bottom - n_bottom * cellSize)) {
-        velocity.xy += calculateAdditionalVelocity(vec2(n / cellSize, m / cellSize) / levelTextureSize, pointPosition.xy);
+        velocity.xy += calculateAdditionalVelocity(vec2(n / cellSize, m / cellSize) / levelTextureSize, pointPosition.xy, pointRepulsionMultiplier);
       }
 
       n = left + n_left * cellSize + cellSize * i;
       m = bottom - n_bottom * cellSize + cellSize * j;
 
       if (n < right && m < bottom) {
-        velocity.xy += calculateAdditionalVelocity(vec2(n / cellSize, m / cellSize) / levelTextureSize, pointPosition.xy);
+        velocity.xy += calculateAdditionalVelocity(vec2(n / cellSize, m / cellSize) / levelTextureSize, pointPosition.xy, pointRepulsionMultiplier);
       }
     }
   }

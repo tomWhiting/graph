@@ -78,6 +78,8 @@ export class Graph {
   private isForceLinkUpdateNeeded = false
   private isForceCenterUpdateNeeded = false
   private isPointImageSizesUpdateNeeded = false
+  private isLinkSpringConstantsUpdateNeeded = false
+  private isPointRepulsionMultipliersUpdateNeeded = false
 
   private _isDestroyed = false
 
@@ -551,6 +553,42 @@ export class Graph {
     if (this._isDestroyed) return
     this.graph.inputLinkStrength = linkStrength
     this.isForceLinkUpdateNeeded = true
+  }
+
+  /**
+   * Sets per-link spring constants for the graph simulation.
+   * When provided, these values override the global `simulationLinkSpring` config for individual links.
+   *
+   * @param {Float32Array} springConstants - A Float32Array representing the spring constant of each link in the format [spring1, spring2, ..., springn],
+   * where `n` is the index of the link and values are typically in the range [0, 1].
+   * A value of 0 means "use the global simulationLinkSpring value".
+   * Example: `new Float32Array([0.5, 1.0, 0.2])` sets the first link to spring 0.5, the second to 1.0, and the third to 0.2.
+   */
+  public setLinkSpringConstants (springConstants: Float32Array): void {
+    if (this._isDestroyed) return
+    this.graph.inputLinkSpringConstants = springConstants
+    this.isLinkSpringConstantsUpdateNeeded = true
+    this.isForceLinkUpdateNeeded = true
+  }
+
+  /**
+   * Sets per-point repulsion multipliers for the graph simulation.
+   * These values multiply the global repulsion force for individual points,
+   * allowing some points to repel more or less strongly than others.
+   *
+   * @param {Float32Array} multipliers - A Float32Array representing the repulsion multiplier of each point in the format [mult1, mult2, ..., multn],
+   * where `n` is the index of the point.
+   * A value of 1.0 means normal repulsion (same as global).
+   * A value of 2.0 means double repulsion.
+   * A value of 0.5 means half repulsion.
+   * A value of 0 means "use the default multiplier of 1.0".
+   * Example: `new Float32Array([1.0, 2.0, 0.5])` gives the first point normal repulsion, the second double, and the third half.
+   */
+  public setPointRepulsionMultipliers (multipliers: Float32Array): void {
+    if (this._isDestroyed) return
+    this.graph.inputPointRepulsionMultipliers = multipliers
+    this.isPointRepulsionMultipliersUpdateNeeded = true
+    this.isForceManyBodyUpdateNeeded = true
   }
 
   /**
@@ -1269,6 +1307,13 @@ export class Graph {
     if (this.isLinkWidthUpdateNeeded) this.lines.updateWidth()
     if (this.isLinkArrowUpdateNeeded) this.lines.updateArrow()
 
+    if (this.isLinkSpringConstantsUpdateNeeded) {
+      this.graph.updateLinkSpringConstants()
+    }
+    if (this.isPointRepulsionMultipliersUpdateNeeded) {
+      this.graph.updatePointRepulsionMultipliers()
+    }
+
     if (this.isForceManyBodyUpdateNeeded) this.forceManyBody?.create()
     if (this.isForceLinkUpdateNeeded) {
       this.forceLinkIncoming?.create(LinkDirection.INCOMING)
@@ -1291,6 +1336,8 @@ export class Graph {
     this.isForceManyBodyUpdateNeeded = false
     this.isForceLinkUpdateNeeded = false
     this.isForceCenterUpdateNeeded = false
+    this.isLinkSpringConstantsUpdateNeeded = false
+    this.isPointRepulsionMultipliersUpdateNeeded = false
   }
 
   /**

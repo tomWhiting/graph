@@ -10,6 +10,7 @@ import updateVert from '@/graph/modules/Shared/quad.vert'
 
 export class ForceManyBody extends CoreModule {
   private randomValuesFbo: regl.Framebuffer2D | undefined
+  private repulsionMultipliersFbo: regl.Framebuffer2D | undefined
   private levelsFbos = new Map<string, regl.Framebuffer2D>()
   private clearLevelsCommand: regl.DrawCommand | undefined
   private clearVelocityCommand: regl.DrawCommand | undefined
@@ -18,10 +19,11 @@ export class ForceManyBody extends CoreModule {
   private forceFromItsOwnCentermassCommand: regl.DrawCommand | undefined
   private quadtreeLevels = 0
   private randomValuesTexture: regl.Texture2D | undefined
+  private repulsionMultipliersTexture: regl.Texture2D | undefined
   private pointIndices: regl.Buffer | undefined
 
   public create (): void {
-    const { reglInstance, store } = this
+    const { reglInstance, store, data } = this
     if (!store.pointsTextureSize) return
     this.quadtreeLevels = Math.log2(store.adjustedSpaceSize)
     for (let i = 0; i < this.quadtreeLevels; i += 1) {
@@ -59,6 +61,26 @@ export class ForceManyBody extends CoreModule {
       stencil: false,
     })
 
+    // Create repulsion multipliers texture
+    const repulsionMultipliersState = new Float32Array(store.pointsTextureSize * store.pointsTextureSize * 4)
+    for (let i = 0; i < store.pointsTextureSize * store.pointsTextureSize; ++i) {
+      // Use the per-point repulsion multiplier if provided, otherwise 0 (shader will use 1.0)
+      repulsionMultipliersState[i * 4] = data.pointRepulsionMultipliers?.[i] ?? 0
+    }
+
+    if (!this.repulsionMultipliersTexture) this.repulsionMultipliersTexture = reglInstance.texture()
+    this.repulsionMultipliersTexture({
+      data: repulsionMultipliersState,
+      shape: [store.pointsTextureSize, store.pointsTextureSize, 4],
+      type: 'float',
+    })
+    if (!this.repulsionMultipliersFbo) this.repulsionMultipliersFbo = reglInstance.framebuffer()
+    this.repulsionMultipliersFbo({
+      color: this.repulsionMultipliersTexture,
+      depth: false,
+      stencil: false,
+    })
+
     if (!this.pointIndices) this.pointIndices = reglInstance.buffer(0)
     this.pointIndices(createIndexesForBuffer(store.pointsTextureSize))
   }
@@ -90,6 +112,7 @@ export class ForceManyBody extends CoreModule {
         },
         uniforms: {
           positionsTexture: () => points?.previousPositionFbo,
+          repulsionMultipliersTexture: () => this.repulsionMultipliersFbo,
           pointsTextureSize: () => store.pointsTextureSize,
           levelTextureSize: (_: regl.DefaultContext, props: { levelTextureSize: number }) => props.levelTextureSize,
           cellSize: (_: regl.DefaultContext, props: { cellSize: number }) => props.cellSize,
@@ -120,6 +143,8 @@ export class ForceManyBody extends CoreModule {
         attributes: { vertexCoord: createQuadBuffer(reglInstance) },
         uniforms: {
           positionsTexture: () => points?.previousPositionFbo,
+          repulsionMultipliersTexture: () => this.repulsionMultipliersFbo,
+          pointsTextureSize: () => store.pointsTextureSize,
           level: (_, props: { levelFbo: regl.Framebuffer2D; levelTextureSize: number; level: number }) => props.level,
           levels: this.quadtreeLevels,
           levelFbo: (_, props) => props.levelFbo,
@@ -156,6 +181,7 @@ export class ForceManyBody extends CoreModule {
         uniforms: {
           positionsTexture: () => points?.previousPositionFbo,
           randomValues: () => this.randomValuesFbo,
+          repulsionMultipliersTexture: () => this.repulsionMultipliersFbo,
           levelFbo: (_, props: { levelFbo: regl.Framebuffer2D; levelTextureSize: number }) => props.levelFbo,
           levelTextureSize: (_, props) => props.levelTextureSize,
           alpha: () => store.alpha,

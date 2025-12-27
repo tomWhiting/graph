@@ -11,7 +11,7 @@ uniform vec2 linkDistRandomVariationRange;
 
 uniform sampler2D linkInfoTexture; // Texture storing first link indices and amount
 uniform sampler2D linkIndicesTexture;
-uniform sampler2D linkPropertiesTexture; // Texture storing link bias and strength
+uniform sampler2D linkPropertiesTexture; // Texture storing link bias, strength, and per-link spring constant
 uniform sampler2D linkRandomDistanceTexture;
 
 uniform float pointsTextureSize;
@@ -43,6 +43,9 @@ void main() {
         vec4 randomMinDistance = texture2D(linkRandomDistanceTexture, linkTextureIndex);
         float bias = biasAndStrength.r;
         float strength = biasAndStrength.g;
+        // Per-link spring constant: if > 0, use it; otherwise fall back to global linkSpring
+        float perLinkSpring = biasAndStrength.b;
+        float effectiveSpring = perLinkSpring > 0.0 ? perLinkSpring : linkSpring;
         float randomMinLinkDist = randomMinDistance.r * (linkDistRandomVariationRange.g - linkDistRandomVariationRange.r) + linkDistRandomVariationRange.r;
         randomMinLinkDist *= linkDistance;
 
@@ -56,7 +59,7 @@ void main() {
         // Apply the link force
         l = max(l, randomMinLinkDist * 0.99);
         l = (l - randomMinLinkDist) / l;
-        l *= linkSpring * alpha;
+        l *= effectiveSpring * alpha;
         l *= strength;
         l *= bias;
         x *= l;

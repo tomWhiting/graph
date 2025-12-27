@@ -24,6 +24,8 @@ export class GraphData {
   public inputLinkColors: Float32Array | undefined
   public inputLinkWidths: Float32Array | undefined
   public inputLinkStrength: Float32Array | undefined
+  public inputLinkSpringConstants: Float32Array | undefined
+  public inputPointRepulsionMultipliers: Float32Array | undefined
   public inputPointClusters: (number | undefined)[] | undefined
   public inputClusterPositions: (number | undefined)[] | undefined
   public inputClusterStrength: Float32Array | undefined
@@ -43,6 +45,8 @@ export class GraphData {
   public linkArrowsBoolean: boolean[] | undefined
   public linkArrows: number[] | undefined
   public linkStrength: Float32Array | undefined
+  public linkSpringConstants: Float32Array | undefined
+  public pointRepulsionMultipliers: Float32Array | undefined
 
   public pointClusters: (number | undefined)[] | undefined
   public clusterPositions: (number | undefined)[] | undefined
@@ -298,6 +302,40 @@ export class GraphData {
     }
   }
 
+  /**
+   * Updates the per-link spring constants based on input data.
+   * If not provided or length mismatch, uses undefined (shader will use global value).
+   */
+  public updateLinkSpringConstants (): void {
+    if (this.linksNumber === undefined) {
+      this.linkSpringConstants = undefined
+      return
+    }
+
+    if (this.inputLinkSpringConstants === undefined || this.inputLinkSpringConstants.length !== this.linksNumber) {
+      this.linkSpringConstants = undefined
+    } else {
+      this.linkSpringConstants = this.inputLinkSpringConstants
+    }
+  }
+
+  /**
+   * Updates the per-point repulsion multipliers based on input data.
+   * If not provided or length mismatch, uses undefined (shader will use default of 1.0).
+   */
+  public updatePointRepulsionMultipliers (): void {
+    if (this.pointsNumber === undefined) {
+      this.pointRepulsionMultipliers = undefined
+      return
+    }
+
+    if (this.inputPointRepulsionMultipliers === undefined || this.inputPointRepulsionMultipliers.length !== this.pointsNumber) {
+      this.pointRepulsionMultipliers = undefined
+    } else {
+      this.pointRepulsionMultipliers = this.inputPointRepulsionMultipliers
+    }
+  }
+
   public updateClusters (): void {
     if (this.pointsNumber === undefined) {
       this.pointClusters = undefined
@@ -328,12 +366,14 @@ export class GraphData {
     this.updatePointShape()
     this.updatePointImageIndices()
     this.updatePointImageSizes()
+    this.updatePointRepulsionMultipliers()
 
     this.updateLinks()
     this.updateLinkColor()
     this.updateLinkWidth()
     this.updateArrows()
     this.updateLinkStrength()
+    this.updateLinkSpringConstants()
 
     this.updateClusters()
 

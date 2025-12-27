@@ -54,6 +54,8 @@ export class ForceLink extends CoreModule {
           strength = Math.sqrt(strength)
           linkBiasAndStrengthState[linkIndex * 4 + 0] = bias
           linkBiasAndStrengthState[linkIndex * 4 + 1] = strength
+          // Per-link spring constant: 0 means use global, positive value overrides
+          linkBiasAndStrengthState[linkIndex * 4 + 2] = data.linkSpringConstants?.[initialLinkIndex] ?? 0
           linkDistanceState[linkIndex * 4] = this.store.getRandomFloat(0, 1)
 
           linkIndex += 1
