@@ -115,6 +115,11 @@ export class Lines extends CoreModule {
           hoveredLinkIndex: () => store.hoveredLinkIndex ?? -1,
           hoveredLinkColor: () => store.hoveredLinkColor,
           hoveredLinkWidthIncrease: () => config.hoveredLinkWidthIncrease,
+          // Flow animation uniforms
+          time: () => store.time,
+          flowSpeed: () => config.linkFlowSpeed,
+          flowIntensity: () => config.linkFlowIntensity,
+          flowMode: () => config.linkFlowMode,
           renderMode: reglInstance.prop<{ renderMode: number }, 'renderMode'>('renderMode'),
         },
         cull: {

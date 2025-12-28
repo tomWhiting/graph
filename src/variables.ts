@@ -9,6 +9,13 @@ export const defaultLinkOpacity = 1.0
 export const defaultLinkWidth = 1
 export const defaultBackgroundColor = '#222222'
 
+export enum LinkFlowMode {
+  Off = 0,
+  Gradient = 1,
+  Pulse = 2,
+  Particles = 3,
+}
+
 export const defaultConfigValues = {
   enableSimulation: true,
   spaceSize: 8192,
@@ -21,6 +28,9 @@ export const defaultConfigValues = {
   curvedLinkWeight: 0.8,
   curvedLinkControlPointDistance: 0.5,
   linkArrows: false,
+  linkFlowMode: LinkFlowMode.Off,
+  linkFlowSpeed: 0.5,
+  linkFlowIntensity: 0.5,
   linkVisibilityDistanceRange: [50, 150],
   linkVisibilityMinTransparency: 0.25,
   hoveredPointCursor: 'auto',

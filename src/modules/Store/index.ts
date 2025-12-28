@@ -39,6 +39,8 @@ export class Store {
   public isSpaceKeyPressed = false
   public div: HTMLDivElement | undefined
   public webglMaxTextureSize = 16384 // Default fallback value
+  /** Time in seconds for animations (updated every frame) */
+  public time = 0
 
   public hoveredPointRingColor = [1, 1, 1, hoveredPointRingOpacity]
   public focusedPointRingColor = [1, 1, 1, focusedPointRingOpacity]

@@ -1616,6 +1616,9 @@ export class Graph {
     if (this._isDestroyed) return
     if (!this.store.pointsTextureSize) return
 
+    // Update time for animations (convert from ms to seconds)
+    this.store.time = (now ?? performance.now()) / 1000
+
     this.fpsMonitor?.begin()
     this.resizeCanvas()
     if (!this.dragInstance.isActive) {
@@ -1904,5 +1907,6 @@ export type { GraphConfigInterface } from './config'
 export { PointShape } from './modules/GraphData'
 export type { ContourGroupConfig, ContourLevel, ContourBorder, ContoursConfig } from './modules/Contours'
 export { GRADIENT_CONTOUR_LEVELS } from './modules/Contours'
+export { LinkFlowMode } from './variables'
 
 export * from './helper'

@@ -13,6 +13,7 @@ import {
   defaultLinkWidth,
   defaultBackgroundColor,
   defaultConfigValues,
+  LinkFlowMode,
 } from '@/graph/variables'
 import { isPlainObject } from '@/graph/helper'
 import { type Hovered } from '@/graph/modules/Store'
@@ -234,6 +235,27 @@ export interface GraphConfigInterface {
    * Default value: `1`
    */
   linkArrowsSizeScale?: number;
+  /**
+   * Flow animation mode for links to indicate direction.
+   * - `0` (Off): No flow animation
+   * - `1` (Gradient): Smooth gradient flowing along the edge
+   * - `2` (Pulse): Discrete bright pulses traveling along the edge
+   * - `3` (Particles): Multiple dots traveling along the edge
+   * Default value: `0` (Off)
+   */
+  linkFlowMode?: LinkFlowMode;
+  /**
+   * Speed of the link flow animation.
+   * Higher values make the flow move faster.
+   * Default value: `0.5`
+   */
+  linkFlowSpeed?: number;
+  /**
+   * Intensity of the link flow animation effect.
+   * Higher values make the flow more visible/pronounced.
+   * Default value: `0.5`
+   */
+  linkFlowIntensity?: number;
   /**
    * The range defines the minimum and maximum link visibility distance in pixels.
    * The link will be fully opaque when its length is less than the first number in the array,
@@ -680,6 +702,9 @@ export class GraphConfig implements GraphConfigInterface {
   // in GraphData.updateArrows() (see: this._config.linkDefaultArrows ?? this._config.linkArrows)
   public linkDefaultArrows = undefined
   public linkArrowsSizeScale = defaultConfigValues.linkArrowsSizeScale
+  public linkFlowMode = defaultConfigValues.linkFlowMode
+  public linkFlowSpeed = defaultConfigValues.linkFlowSpeed
+  public linkFlowIntensity = defaultConfigValues.linkFlowIntensity
   public scaleLinksOnZoom = defaultConfigValues.scaleLinksOnZoom
   public linkVisibilityDistanceRange = defaultConfigValues.linkVisibilityDistanceRange
   public linkVisibilityMinTransparency = defaultConfigValues.linkVisibilityMinTransparency
