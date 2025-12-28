@@ -13,6 +13,7 @@ import { ForceManyBody } from '@/graph/modules/ForceManyBody'
 import { ForceManyBodyQuadtree } from '@/graph/modules/ForceManyBodyQuadtree'
 import { ForceMouse } from '@/graph/modules/ForceMouse'
 import { Clusters } from '@/graph/modules/Clusters'
+import { Contours, ContourGroupConfig, ContoursConfig } from '@/graph/modules/Contours'
 import { FPSMonitor } from '@/graph/modules/FPSMonitor'
 import { GraphData } from '@/graph/modules/GraphData'
 import { Lines } from '@/graph/modules/Lines'
@@ -43,6 +44,7 @@ export class Graph {
   private forceLinkOutgoing: ForceLink | undefined
   private forceMouse: ForceMouse | undefined
   private clusters: Clusters | undefined
+  private contours: Contours | undefined
   private zoomInstance = new Zoom(this.store, this.config)
   private dragInstance = new Drag(this.store, this.config)
 
@@ -203,6 +205,7 @@ export class Graph {
       this.forceMouse = new ForceMouse(this.reglInstance, this.config, this.store, this.graph, this.points)
     }
     this.clusters = new Clusters(this.reglInstance, this.config, this.store, this.graph, this.points)
+    this.contours = new Contours(this.reglInstance, this.config, this.store, this.graph, this.points)
 
     this.store.backgroundColor = getRgbaColor(this.config.backgroundColor)
     this.store.setHoveredPointRingColor(this.config.hoveredPointRingColor ?? defaultConfigValues.hoveredPointRingColor)
@@ -638,6 +641,93 @@ export class Graph {
     if (this._isDestroyed) return
     this.graph.inputClusterStrength = clusterStrength
     this.isPointClusterUpdateNeeded = true
+  }
+
+  // ============================================================
+  // CONTOURS API - Metaball/organic boundaries around node groups
+  // ============================================================
+
+  /**
+   * Sets contour groups for the graph. Contours create organic, metaball-style
+   * boundaries around groups of nodes - perfect for visualizing clusters,
+   * task boundaries, or hierarchical groupings.
+   *
+   * @param {Record<string, ContourGroupConfig>} groups - Object mapping group IDs to their configurations.
+   *
+   * @example
+   *   // Create two groups with different styles
+   *   graph.setContourGroups({
+   *     frontend: {
+   *       pointIndices: [0, 1, 2, 5, 8],
+   *       radius: 200,
+   *       levels: [{ threshold: 0.5, color: 'rgba(76, 175, 80, 0.4)' }],
+   *       border: { color: '#4CAF50', thickness: 3 }
+   *     },
+   *     backend: {
+   *       pointIndices: [3, 4, 6, 7],
+   *       levels: [
+   *         { threshold: 0.7, color: 'rgba(33, 150, 243, 0.6)' },
+   *         { threshold: 0.4, color: 'rgba(33, 150, 243, 0.3)' }
+   *       ]
+   *     }
+   *   })
+   */
+  public setContourGroups (groups: Record<string, ContourGroupConfig>): void {
+    if (this._isDestroyed || !this.contours) return
+    this.contours.setGroups(groups)
+  }
+
+  /**
+   * Sets or updates a single contour group.
+   *
+   * @param {string} id - Unique identifier for this group
+   * @param {ContourGroupConfig} config - Configuration for the group
+   *
+   * @example
+   *   graph.setContourGroup('team-alpha', {
+   *     pointIndices: [0, 3, 7, 12],
+   *     radius: 150,
+   *     levels: [{ threshold: 0.5, color: '#FF5722' }]
+   *   })
+   */
+  public setContourGroup (id: string, config: ContourGroupConfig): void {
+    if (this._isDestroyed || !this.contours) return
+    this.contours.setGroup(id, config)
+  }
+
+  /**
+   * Removes a contour group by ID.
+   *
+   * @param {string} id - The group ID to remove
+   */
+  public removeContourGroup (id: string): void {
+    if (this._isDestroyed || !this.contours) return
+    this.contours.removeGroup(id)
+  }
+
+  /**
+   * Clears all contour groups.
+   */
+  public clearContourGroups (): void {
+    if (this._isDestroyed || !this.contours) return
+    this.contours.clearGroups()
+  }
+
+  /**
+   * Configures global contours settings.
+   *
+   * @param {Partial<ContoursConfig>} config - Configuration options
+   *
+   * @example
+   *   graph.setContoursConfig({
+   *     enabled: true,
+   *     defaultRadius: 200,
+   *     renderBehindPoints: true
+   *   })
+   */
+  public setContoursConfig (config: Partial<ContoursConfig>): void {
+    if (this._isDestroyed || !this.contours) return
+    this.contours.setConfig(config)
   }
 
   /**
@@ -1460,6 +1550,7 @@ export class Graph {
     this.forceManyBody?.initPrograms()
     this.forceCenter?.initPrograms()
     this.clusters.initPrograms()
+    this.contours?.initPrograms()
   }
 
   /**
@@ -1509,6 +1600,9 @@ export class Graph {
       depth: 1,
       stencil: 0,
     })
+
+    // Draw contours behind everything else
+    this.contours?.draw()
 
     const { config: { renderLinks } } = this
     if (renderLinks && this.store.linksTextureSize) {
@@ -1776,5 +1870,7 @@ export class Graph {
 
 export type { GraphConfigInterface } from './config'
 export { PointShape } from './modules/GraphData'
+export type { ContourGroupConfig, ContourLevel, ContourBorder, ContoursConfig } from './modules/Contours'
+export { GRADIENT_CONTOUR_LEVELS } from './modules/Contours'
 
 export * from './helper'
