@@ -14,6 +14,8 @@ export enum LinkFlowMode {
   Gradient = 1,
   Pulse = 2,
   Particles = 3,
+  Noise = 4,
+  LIC = 5,
 }
 
 export const defaultConfigValues = {

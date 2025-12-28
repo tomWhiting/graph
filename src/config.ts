@@ -241,6 +241,8 @@ export interface GraphConfigInterface {
    * - `1` (Gradient): Smooth gradient flowing along the edge
    * - `2` (Pulse): Discrete bright pulses traveling along the edge
    * - `3` (Particles): Multiple dots traveling along the edge
+   * - `4` (Noise): Flowing procedural noise pattern
+   * - `5` (LIC): Line Integral Convolution (wind-map style streaked noise)
    * Default value: `0` (Off)
    */
   linkFlowMode?: LinkFlowMode;
