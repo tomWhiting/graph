@@ -115,11 +115,25 @@ export class Lines extends CoreModule {
           hoveredLinkIndex: () => store.hoveredLinkIndex ?? -1,
           hoveredLinkColor: () => store.hoveredLinkColor,
           hoveredLinkWidthIncrease: () => config.hoveredLinkWidthIncrease,
-          // Flow animation uniforms
+          // Flow animation uniforms (PWM-based) - Layer 1
           time: () => store.time,
+          flowEnabled: () => config.linkFlow,
           flowSpeed: () => config.linkFlowSpeed,
-          flowIntensity: () => config.linkFlowIntensity,
-          flowMode: () => config.linkFlowMode,
+          flowPulseWidth: () => config.linkFlowPulseWidth,
+          flowPulseCount: () => config.linkFlowPulseCount,
+          flowWaveShape: () => config.linkFlowWaveShape,
+          flowBrightness: () => config.linkFlowBrightness,
+          flowFade: () => config.linkFlowFade,
+          flowColor: () => config.linkFlowColor,
+          // Flow animation uniforms - Layer 2
+          flow2Enabled: () => config.linkFlow2,
+          flow2Speed: () => config.linkFlow2Speed,
+          flow2PulseWidth: () => config.linkFlow2PulseWidth,
+          flow2PulseCount: () => config.linkFlow2PulseCount,
+          flow2WaveShape: () => config.linkFlow2WaveShape,
+          flow2Brightness: () => config.linkFlow2Brightness,
+          flow2Fade: () => config.linkFlow2Fade,
+          flow2Color: () => config.linkFlow2Color,
           renderMode: reglInstance.prop<{ renderMode: number }, 'renderMode'>('renderMode'),
         },
         cull: {

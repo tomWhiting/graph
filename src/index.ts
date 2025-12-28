@@ -1907,6 +1907,5 @@ export type { GraphConfigInterface } from './config'
 export { PointShape } from './modules/GraphData'
 export type { ContourGroupConfig, ContourLevel, ContourBorder, ContoursConfig } from './modules/Contours'
 export { GRADIENT_CONTOUR_LEVELS } from './modules/Contours'
-export { LinkFlowMode } from './variables'
 
 export * from './helper'

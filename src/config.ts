@@ -13,7 +13,6 @@ import {
   defaultLinkWidth,
   defaultBackgroundColor,
   defaultConfigValues,
-  LinkFlowMode,
 } from '@/graph/variables'
 import { isPlainObject } from '@/graph/helper'
 import { type Hovered } from '@/graph/modules/Store'
@@ -236,28 +235,104 @@ export interface GraphConfigInterface {
    */
   linkArrowsSizeScale?: number;
   /**
-   * Flow animation mode for links to indicate direction.
-   * - `0` (Off): No flow animation
-   * - `1` (Gradient): Smooth gradient flowing along the edge
-   * - `2` (Pulse): Discrete bright pulses traveling along the edge
-   * - `3` (Particles): Multiple dots traveling along the edge
-   * - `4` (Noise): Flowing procedural noise pattern
-   * - `5` (LIC): Line Integral Convolution (wind-map style streaked noise)
-   * Default value: `0` (Off)
+   * Enable flow animation on links to indicate direction (Layer 1).
+   * When enabled, animated pulses travel along edges from source to target.
+   * Default value: `false`
    */
-  linkFlowMode?: LinkFlowMode;
+  linkFlow?: boolean;
   /**
-   * Speed of the link flow animation.
-   * Higher values make the flow move faster.
+   * Speed of the link flow animation (Layer 1).
+   * Higher values make the pulses travel faster.
    * Default value: `0.5`
    */
   linkFlowSpeed?: number;
   /**
-   * Intensity of the link flow animation effect.
-   * Higher values make the flow more visible/pronounced.
+   * Width of each pulse in the flow animation (0.005 to 1.0) (Layer 1).
+   * - Very narrow (0.005-0.05): Creates particle-like dots
+   * - Medium (0.1-0.3): Creates distinct pulses
+   * - Wide (0.5-0.9): Creates gradient-like waves
+   * Default value: `0.15`
+   */
+  linkFlowPulseWidth?: number;
+  /**
+   * Number of pulses distributed along each edge (1 to 8) (Layer 1).
+   * More pulses create a denser flow pattern.
+   * Default value: `3`
+   */
+  linkFlowPulseCount?: number;
+  /**
+   * Wave shape for the flow animation (0.0 to 1.0) (Layer 1).
+   * - 0.0: Square wave (sharp on/off transitions)
+   * - 0.5: Triangle wave (linear fade in/out)
+   * - 1.0: Sine wave (smooth bell curve, gentlest transition)
+   * Default value: `1.0` (sine)
+   */
+  linkFlowWaveShape?: number;
+  /**
+   * How much brighter the pulses are compared to the base edge (Layer 1).
+   * - 1.0: Same brightness as edge
+   * - 2.0: Pulses are 2x brighter
+   * - 3.0: Pulses are 3x brighter
+   * Default value: `1.5`
+   */
+  linkFlowBrightness?: number;
+  /**
+   * How much to fade/dim the non-pulse areas of the edge (Layer 1).
+   * - 0.0: No fading, edge stays fully visible
+   * - 0.5: Non-pulse areas are 50% transparent
+   * - 1.0: Non-pulse areas are fully transparent
    * Default value: `0.5`
    */
-  linkFlowIntensity?: number;
+  linkFlowFade?: number;
+  /**
+   * Color to tint the pulses (Layer 1).
+   * RGBA array where alpha controls blend amount (0 = use edge color, 1 = full tint).
+   * Example: [1, 1, 0, 0.8] for yellow pulses at 80% blend.
+   * Default value: `[1, 1, 1, 0]` (no tint)
+   */
+  linkFlowColor?: [number, number, number, number];
+  /**
+   * Enable flow animation Layer 2 for stacking multiple effects.
+   * Layer 2 renders on top of Layer 1, allowing combinations like
+   * slow waves with fast sparks.
+   * Default value: `false`
+   */
+  linkFlow2?: boolean;
+  /**
+   * Speed of Layer 2 flow animation.
+   * Default value: `1.0`
+   */
+  linkFlow2Speed?: number;
+  /**
+   * Pulse width for Layer 2.
+   * Default value: `0.05`
+   */
+  linkFlow2PulseWidth?: number;
+  /**
+   * Number of pulses for Layer 2.
+   * Default value: `5`
+   */
+  linkFlow2PulseCount?: number;
+  /**
+   * Wave shape for Layer 2.
+   * Default value: `0.5` (triangle)
+   */
+  linkFlow2WaveShape?: number;
+  /**
+   * Brightness multiplier for Layer 2 pulses.
+   * Default value: `2.0`
+   */
+  linkFlow2Brightness?: number;
+  /**
+   * Fade amount for Layer 2 non-pulse areas.
+   * Default value: `0.0`
+   */
+  linkFlow2Fade?: number;
+  /**
+   * Color to tint Layer 2 pulses.
+   * Default value: `[1, 1, 0, 0.8]` (yellow sparks)
+   */
+  linkFlow2Color?: [number, number, number, number];
   /**
    * The range defines the minimum and maximum link visibility distance in pixels.
    * The link will be fully opaque when its length is less than the first number in the array,
@@ -704,9 +779,22 @@ export class GraphConfig implements GraphConfigInterface {
   // in GraphData.updateArrows() (see: this._config.linkDefaultArrows ?? this._config.linkArrows)
   public linkDefaultArrows = undefined
   public linkArrowsSizeScale = defaultConfigValues.linkArrowsSizeScale
-  public linkFlowMode = defaultConfigValues.linkFlowMode
+  public linkFlow = defaultConfigValues.linkFlow
   public linkFlowSpeed = defaultConfigValues.linkFlowSpeed
-  public linkFlowIntensity = defaultConfigValues.linkFlowIntensity
+  public linkFlowPulseWidth = defaultConfigValues.linkFlowPulseWidth
+  public linkFlowPulseCount = defaultConfigValues.linkFlowPulseCount
+  public linkFlowWaveShape = defaultConfigValues.linkFlowWaveShape
+  public linkFlowBrightness = defaultConfigValues.linkFlowBrightness
+  public linkFlowFade = defaultConfigValues.linkFlowFade
+  public linkFlowColor = defaultConfigValues.linkFlowColor
+  public linkFlow2 = defaultConfigValues.linkFlow2
+  public linkFlow2Speed = defaultConfigValues.linkFlow2Speed
+  public linkFlow2PulseWidth = defaultConfigValues.linkFlow2PulseWidth
+  public linkFlow2PulseCount = defaultConfigValues.linkFlow2PulseCount
+  public linkFlow2WaveShape = defaultConfigValues.linkFlow2WaveShape
+  public linkFlow2Brightness = defaultConfigValues.linkFlow2Brightness
+  public linkFlow2Fade = defaultConfigValues.linkFlow2Fade
+  public linkFlow2Color = defaultConfigValues.linkFlow2Color
   public scaleLinksOnZoom = defaultConfigValues.scaleLinksOnZoom
   public linkVisibilityDistanceRange = defaultConfigValues.linkVisibilityDistanceRange
   public linkVisibilityMinTransparency = defaultConfigValues.linkVisibilityMinTransparency

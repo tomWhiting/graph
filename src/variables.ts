@@ -9,15 +9,6 @@ export const defaultLinkOpacity = 1.0
 export const defaultLinkWidth = 1
 export const defaultBackgroundColor = '#222222'
 
-export enum LinkFlowMode {
-  Off = 0,
-  Gradient = 1,
-  Pulse = 2,
-  Particles = 3,
-  Noise = 4,
-  LIC = 5,
-}
-
 export const defaultConfigValues = {
   enableSimulation: true,
   spaceSize: 8192,
@@ -30,9 +21,24 @@ export const defaultConfigValues = {
   curvedLinkWeight: 0.8,
   curvedLinkControlPointDistance: 0.5,
   linkArrows: false,
-  linkFlowMode: LinkFlowMode.Off,
+  // Flow animation (PWM-based) - Layer 1
+  linkFlow: false,
   linkFlowSpeed: 0.5,
-  linkFlowIntensity: 0.5,
+  linkFlowPulseWidth: 0.15, // 0.005 = particles, 0.5 = pulses, 0.9 = gradient-like
+  linkFlowPulseCount: 3, // number of pulses per edge
+  linkFlowWaveShape: 1.0, // 0.0 = square, 0.5 = triangle, 1.0 = sine (smoothest)
+  linkFlowBrightness: 1.5, // 1.0 = same as edge, 2.0 = 2x brighter pulses
+  linkFlowFade: 0.5, // 0 = no fade, 1 = fully transparent non-pulse areas
+  linkFlowColor: [1, 1, 1, 0], // RGBA - alpha controls blend amount (0 = use edge color)
+  // Flow animation - Layer 2 (for stacking effects)
+  linkFlow2: false,
+  linkFlow2Speed: 1.0,
+  linkFlow2PulseWidth: 0.05,
+  linkFlow2PulseCount: 5,
+  linkFlow2WaveShape: 0.5,
+  linkFlow2Brightness: 2.0,
+  linkFlow2Fade: 0.0,
+  linkFlow2Color: [1, 1, 0, 0.8], // Yellow sparks by default
   linkVisibilityDistanceRange: [50, 150],
   linkVisibilityMinTransparency: 0.25,
   hoveredPointCursor: 'auto',
