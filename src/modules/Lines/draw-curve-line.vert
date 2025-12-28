@@ -4,6 +4,7 @@ attribute vec2 position, pointA, pointB;
 attribute vec4 color;
 attribute float width;
 attribute float arrow;
+attribute float curvature;
 attribute float linkIndices;
 
 uniform sampler2D positionsTexture;
@@ -98,8 +99,9 @@ void main() {
   vec2 yBasis = normalize(vec2(-xBasis.y, xBasis.x));
 
   // Calculate link distance and control point for curved link
+  // Use per-link curvature attribute (0 = straight, > 0 = curved)
   float linkDist = length(xBasis);
-  float h = curvedLinkControlPointDistance;
+  float h = curvature;
   vec2 controlPoint = (a + b) / 2.0 + yBasis * linkDist * h;
 
   // Convert link distance to screen pixels

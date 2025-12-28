@@ -16,6 +16,7 @@ export class Lines extends CoreModule {
   private colorBuffer: regl.Buffer | undefined
   private widthBuffer: regl.Buffer | undefined
   private arrowBuffer: regl.Buffer | undefined
+  private curvatureBuffer: regl.Buffer | undefined
   private curveLineGeometry: number[][] | undefined
   private curveLineBuffer: regl.Buffer | undefined
   private linkIndexBuffer: regl.Buffer | undefined
@@ -76,6 +77,12 @@ export class Lines extends CoreModule {
           },
           arrow: {
             buffer: () => this.arrowBuffer,
+            divisor: 1,
+            offset: Float32Array.BYTES_PER_ELEMENT * 0,
+            stride: Float32Array.BYTES_PER_ELEMENT * 1,
+          },
+          curvature: {
+            buffer: () => this.curvatureBuffer,
             divisor: 1,
             offset: Float32Array.BYTES_PER_ELEMENT * 0,
             stride: Float32Array.BYTES_PER_ELEMENT * 1,
@@ -178,6 +185,7 @@ export class Lines extends CoreModule {
     if (!this.colorBuffer) this.updateColor()
     if (!this.widthBuffer) this.updateWidth()
     if (!this.arrowBuffer) this.updateArrow()
+    if (!this.curvatureBuffer) this.updateCurvature()
     if (!this.curveLineGeometry) this.updateCurveLineGeometry()
 
     // Render normal links (renderMode: 0.0 = normal rendering)
@@ -248,6 +256,21 @@ export class Lines extends CoreModule {
     const { reglInstance, data } = this
     if (!this.arrowBuffer) this.arrowBuffer = reglInstance.buffer(0)
     this.arrowBuffer(data.linkArrows ?? new Float32Array())
+  }
+
+  public updateCurvature (): void {
+    const { reglInstance, data, config } = this
+    if (!this.curvatureBuffer) this.curvatureBuffer = reglInstance.buffer(0)
+    // Use per-link curvatures if provided, otherwise create default array based on global curvedLinks setting
+    if (data.linkCurvatures) {
+      this.curvatureBuffer(data.linkCurvatures)
+    } else if (data.linksNumber) {
+      // Default: use global curvedLinkControlPointDistance for all links when curvedLinks is true, 0 otherwise
+      const defaultCurvature = config.curvedLinks ? (config.curvedLinkControlPointDistance ?? defaultConfigValues.curvedLinkControlPointDistance) : 0
+      const curvatures = new Float32Array(data.linksNumber)
+      curvatures.fill(defaultCurvature)
+      this.curvatureBuffer(curvatures)
+    }
   }
 
   public updateCurveLineGeometry (): void {

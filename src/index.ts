@@ -75,6 +75,7 @@ export class Graph {
   private isLinkColorUpdateNeeded = false
   private isLinkWidthUpdateNeeded = false
   private isLinkArrowUpdateNeeded = false
+  private isLinkCurvatureUpdateNeeded = false
   private isPointClusterUpdateNeeded = false
   private isForceManyBodyUpdateNeeded = false
   private isForceLinkUpdateNeeded = false
@@ -543,6 +544,35 @@ export class Graph {
     if (this._isDestroyed) return
     this.graph.linkArrowsBoolean = linkArrows
     this.isLinkArrowUpdateNeeded = true
+  }
+
+  /**
+   * Sets the curvature for each graph link. This controls whether each link
+   * is rendered as a straight line or a curved arc.
+   *
+   * @param {Float32Array} linkCurvatures - A Float32Array representing the curvature of each link.
+   * - 0 = straight line
+   * - 0.25 = default curve (matches `curvedLinkControlPointDistance` default)
+   * - Negative values curve in the opposite direction
+   *
+   * Example: `new Float32Array([0, 0.25, 0.5])` renders the first link straight,
+   * the second with default curve, and the third with double curve.
+   */
+  public setLinkCurvatures (linkCurvatures: Float32Array): void {
+    if (this._isDestroyed) return
+    this.graph.linkCurvatures = linkCurvatures
+    this.isLinkCurvatureUpdateNeeded = true
+  }
+
+  /**
+   * Gets the current curvature values of the graph links.
+   *
+   * @returns {Float32Array | undefined} A Float32Array representing the curvature of each link,
+   * or undefined if no curvatures are set (global setting is used).
+   */
+  public getLinkCurvatures (): Float32Array | undefined {
+    if (this._isDestroyed) return undefined
+    return this.graph.linkCurvatures
   }
 
   /**
@@ -1396,6 +1426,7 @@ export class Graph {
     if (this.isLinkColorUpdateNeeded) this.lines.updateColor()
     if (this.isLinkWidthUpdateNeeded) this.lines.updateWidth()
     if (this.isLinkArrowUpdateNeeded) this.lines.updateArrow()
+    if (this.isLinkCurvatureUpdateNeeded) this.lines.updateCurvature()
 
     if (this.isLinkSpringConstantsUpdateNeeded) {
       this.graph.updateLinkSpringConstants()
@@ -1422,6 +1453,7 @@ export class Graph {
     this.isLinkColorUpdateNeeded = false
     this.isLinkWidthUpdateNeeded = false
     this.isLinkArrowUpdateNeeded = false
+    this.isLinkCurvatureUpdateNeeded = false
     this.isPointClusterUpdateNeeded = false
     this.isForceManyBodyUpdateNeeded = false
     this.isForceLinkUpdateNeeded = false

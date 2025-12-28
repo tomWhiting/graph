@@ -44,6 +44,7 @@ export class GraphData {
   public linkWidths: Float32Array | undefined
   public linkArrowsBoolean: boolean[] | undefined
   public linkArrows: number[] | undefined
+  public linkCurvatures: Float32Array | undefined
   public linkStrength: Float32Array | undefined
   public linkSpringConstants: Float32Array | undefined
   public pointRepulsionMultipliers: Float32Array | undefined
