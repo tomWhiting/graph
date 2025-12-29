@@ -1,0 +1,65 @@
+body {
+  font-family: "Nunito Sans", -apple-system, ".SFNSText-Regular", "San Francisco", BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: 0px;
+}
+
+.app {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.graph {
+  width: 100%;
+  height: 100vh;
+}
+
+.controls {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: #fff;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  max-width: 250px;
+}
+
+.controls-header {
+  font-weight: bold;
+  margin-bottom: 12px;
+  font-size: 14pt;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 8px;
+}
+
+.control-btn {
+  margin: 6px 0;
+  padding: 8px 12px;
+  font-size: 10pt;
+  cursor: pointer;
+  user-select: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.control-btn.active {
+  background: rgba(76, 175, 80, 0.5);
+}
+
+.control-label {
+  margin-top: 12px;
+  margin-bottom: 4px;
+  font-size: 10pt;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.control-slider {
+  width: 100%;
+  margin: 4px 0;
+}
